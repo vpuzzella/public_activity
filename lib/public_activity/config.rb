@@ -7,6 +7,7 @@ module PublicActivity
     attr_accessor :enabled, :table_name
 
     @@orm = :active_record
+    @@sidekiq_options = {}
 
     def initialize
       # Indicates whether PublicActivity is enabled globally
@@ -25,6 +26,7 @@ module PublicActivity
       b = Block.new
       b.instance_eval &block
       @@orm = b.orm unless b.orm.nil?
+      @@sidekiq_options = b.sidekiq_options unless b.sidekiq_options.nil?
       instance
       instance.instance_variable_set(:@enabled,    b.enabled)     unless  b.enabled.nil?
     end
@@ -46,12 +48,34 @@ module PublicActivity
       self.class.orm(orm)
     end
 
+    # Set the Sidekiq queue for use by PublicActivity.
+    def self.sidekiq_options(sidekiq_options = nil)
+      @@sidekiq_options = sidekiq_options || @@sidekiq_options
+    end
+
+    # alias for {#sidekiq_options}
+    # @see #sidekiq_options
+    def self.sidekiq_options=(sidekiq_options = nil)
+      sidekiq_options(sidekiq_options)
+    end
+
+    # instance version of {Config#sidekiq_options}
+    # @see Config#sidekiq_options
+    def sidekiq_options(sidekiq_options = nil)
+      self.class.sidekiq_options(sidekiq_options)
+    end
+
     # Provides simple DSL for the config block.
     class Block
-      attr_reader :orm, :enabled, :table_name
+      attr_reader :orm, :enabled, :table_name, :sidekiq_options
       # @see Config#orm
       def orm(orm = nil)
         @orm = (orm ? orm.to_sym : false) || @orm
+      end
+
+      # @see Config#sidekiq_options
+      def sidekiq_options(sidekiq_options = nil)
+        @sidekiq_options = sidekiq_options || @sidekiq_options
       end
 
       # Decides whether to enable PublicActivity.

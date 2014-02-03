@@ -1,0 +1,5 @@
+require_relative 'active_record'
+require_relative 'active_record_via_sidekiq/activity.rb'
+require_relative 'active_record_via_sidekiq/adapter.rb'
+require_relative 'active_record_via_sidekiq/activist.rb'
+require_relative 'active_record_via_sidekiq/trackable.rb'

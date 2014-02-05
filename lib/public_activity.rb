@@ -53,8 +53,8 @@ module PublicActivity
     "PublicActivity::ORM::#{orm.to_s.classify}::#{model}".constantize
   end
 
-  def self.sidekiq_options
-    PublicActivity.config.sidekiq_options
+  def self.sidekiq
+    PublicActivity.config.sidekiq
   end
 
   # Module to be included in ActiveRecord models. Adds required functionality.

@@ -220,14 +220,24 @@ module PublicActivity
 
       raise NoKeyProvided, "No key provided for #{self.class.name}" unless key
 
+      sidekiq_options = perpare_sidekiq_options(raw_options.delete(:sidekiq))
+
       prepare_custom_fields(raw_options.except(:parameters, :params)).merge(
         {
-          key:        key,
-          owner:      prepare_relation(:owner,     raw_options),
-          recipient:  prepare_relation(:recipient, raw_options),
-          parameters: prepare_parameters(raw_options.delete(:parameters)),
+          key:         key,
+          owner:       prepare_relation(:owner,     raw_options),
+          recipient:   prepare_relation(:recipient, raw_options),
+          parameters:  prepare_parameters(raw_options.delete(:parameters)),
+          occurred_at: Time.new,
+          sidekiq:     sidekiq_options,
         }
       )
+    end
+
+    def perpare_sidekiq_options(options)
+      return if options == false # false means do not use sidekiq
+      return unless options || config_options = PublicActivity.config.sidekiq
+      (config_options||{}).merge(options||{}) # Override config
     end
 
     # Prepares and resolves custom fields

@@ -234,10 +234,13 @@ module PublicActivity
       )
     end
 
-    def perpare_sidekiq_options(options)
-      return if options == false # false means do not use sidekiq
-      return unless options || config_options = PublicActivity.config.sidekiq
-      (config_options||{}).merge(options||{}) # Override config
+    def perpare_sidekiq_options(tracked_options)
+      return if tracked_options == false # false means do not use sidekiq
+      return unless tracked_options || config_options = PublicActivity.config.sidekiq
+      config_options ||= {}
+      config_options = config_options.dup
+      config_options = {} if config_options.delete(:default) == false && !tracked_options
+      config_options.merge(tracked_options||{}) # Override config
     end
 
     # Prepares and resolves custom fields
